@@ -1,0 +1,38 @@
+
+default_stages: [commit] # All hooks that do not specify any stages are set to `commit` by default
+repos:
+  # Generic Hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-ast
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-yaml
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+  - repo: local
+    hooks:
+      - id: generate-readme-graphs
+        name: generate-readme-graphs
+        entry: tox -e generate-readme-graphs --
+        language: system
+        types: [python]
+      - id: black
+        name: black
+        entry: tox -e black-run --
+        language: system
+        types: [python]
+      - id: ruff
+        name: ruff-fix
+        entry: tox -e ruff-fix --
+        language: system
+        types: [python]
+      - id: mypy
+        name: mypy
+        entry: tox -e mypy --
+        language: system
+        types: [python]

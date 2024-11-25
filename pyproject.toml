@@ -28,10 +28,8 @@ dev = [
     "coverage",  # testing
     "mypy",  # linting
     "pytest",  # testing
-    "ruff"  # linting
-]
-tests= [
-    "pytest",  # testing
+    "ruff",  # linting
+    "black",  # linting
 ]
 
 [project.urls]
@@ -46,23 +44,31 @@ package-dir = {"" = "src"}
 [tool.setuptools.package-data]
 "*" = ["*.*"]
 
-
-
-
-# Mypy
-# ----
-
 [tool.mypy]
-files = "."
+disable_error_code = "import-untyped"
 
-# Use strict defaults
-strict = true
-warn_unreachable = true
-warn_no_return = true
+[tool.black]
+line-length = 120
 
-[[tool.mypy.overrides]]
-# Don't require test functions to include types
-module = "tests.*"
-allow_untyped_defs = true
-disable_error_code = "attr-defined"
+[tool.ruff]
+line-length = 120
+lint.select = ["D", "E", "F", "I", "W"]
 
+lint.ignore = [ # Set of rules tested on mts-api-python
+    "D102", # Missing docstring in public method
+    "D103", # Missing docstring in public function (already covered by pylint)
+    "D107", # Missing docstring in __init__
+    "D203", # 1 blank line required before class docstring, conflicts with D211 no blank line before class docstring
+    "D205", # 1 blank line required between summary line and description, very strict
+    "D212", "D213", # Summary should start at the first or second line, both are ignored by default
+    "D401", # First line should be in imperative mood
+    "D404", # First word of the docstring should not be "This"
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["D104"] # ignore no docstrings in __init__.py
+"tests/*" = ["D"] # ignore all docstrings related linting in tests
+"*.ipynb" = ["D"] # ignore all docstrings related linting in notebooks
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"

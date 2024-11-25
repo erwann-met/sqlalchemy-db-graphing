@@ -1,14 +1,26 @@
 """ Module for pytest fixtures. """
 
 import pytest
-from sqlalchemy import ARRAY, JSON, Boolean, Column, DateTime, Float, ForeignKey, Integer, MetaData, String
+from sqlalchemy import (
+    ARRAY,
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    MetaData,
+    String,
+)
 from sqlalchemy.orm import declarative_base, relationship
 
 metadata_1 = MetaData()
 TestBase1 = declarative_base(metadata=metadata_1)
 
+
 class User(TestBase1):
-    __tablename__ = 'users'
+    __tablename__ = "users"
     id = Column(Integer, primary_key=True)
     name = Column(String)
     fullname = Column(String)
@@ -18,20 +30,23 @@ class User(TestBase1):
     active = Column(Boolean)
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
-    roles = Column(Integer, ForeignKey(column=f'roles.id'))
+    roles = Column(Integer, ForeignKey(column=f"roles.id"))
+
 
 class Role(TestBase1):
-    __tablename__ = 'roles'
+    __tablename__ = "roles"
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
 
-SCHEMA = 'test_schema'
+
+SCHEMA = "test_schema"
 metadata_2 = MetaData(schema=SCHEMA)
 TestBase2 = declarative_base(metadata=metadata_2)
 
+
 class User(TestBase2):
-    __tablename__ = 'users'
+    __tablename__ = "users"
     id = Column(Integer, primary_key=True)
     name = Column(String)
     fullname = Column(String)
@@ -41,10 +56,11 @@ class User(TestBase2):
     active = Column(Boolean)
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
-    roles = Column(Integer, ForeignKey(column=f'{SCHEMA}.roles.id'))
+    roles = Column(Integer, ForeignKey(column=f"{SCHEMA}.roles.id"))
+
 
 class Role(TestBase2):
-    __tablename__ = 'roles'
+    __tablename__ = "roles"
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
@@ -53,10 +69,11 @@ class Role(TestBase2):
 metadata_3 = MetaData()
 TestBase3 = declarative_base(metadata=metadata_3)
 
+
 class User(TestBase3):
-    __tablename__ = 'users'
-    __table_args__ = {'schema': 'test_schema'}
-    
+    __tablename__ = "users"
+    __table_args__ = {"schema": "test_schema"}
+
     id = Column(Integer, primary_key=True)
     name = Column(String)
     fullname = Column(String)
@@ -66,15 +83,17 @@ class User(TestBase3):
     active = Column(Boolean)
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
-    roles = Column(Integer, ForeignKey(column=f'test_schema_2.roles.id'))
+    roles = Column(Integer, ForeignKey(column=f"test_schema_2.roles.id"))
+
 
 class Role(TestBase3):
-    __tablename__ = 'roles'
-    __table_args__ = {'schema': 'test_schema_2'}
-    
+    __tablename__ = "roles"
+    __table_args__ = {"schema": "test_schema_2"}
+
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
+
 
 @pytest.fixture
 def test_databases():
