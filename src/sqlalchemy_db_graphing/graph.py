@@ -1,9 +1,9 @@
 """Script to generate a database schema diagram."""
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import pydot
-from sqlalchemy import MetaData
+from sqlalchemy import MetaData, create_engine
 
 import sqlalchemy_db_graphing.constants as cst
 
@@ -216,3 +216,40 @@ def generate_graph_as_svg(
     """
     graph = generate_graph_as_pydot(metadata, pk_color, fk_color, pk_and_fk_color, display_legend, **kwargs)
     graph.write_svg(filename)
+
+
+def get_schema_metadata_from_live_database(url: str, schema: Optional[str] = None) -> MetaData:
+    """Get the metadata of a database from a connexion string.
+
+    Parameters
+    ----------
+    url= : str
+        The url to the database.
+    schema : Optional[str]
+        The schema to get the metadata from. Defaults to None.
+
+    Returns
+    -------
+    MetaData
+        The metadata of the database.
+
+    Raises
+    ------
+    DatabaseConnexionError
+        If there is an issue with the database connexion.
+    """
+    try:
+        engine = create_engine(url=url)
+        metadata = MetaData()
+        metadata.reflect(bind=engine, schema=schema)
+        return metadata
+    except Exception as e:
+        raise DatabaseConnexionError("Error while connecting to the database. Is it running?") from e
+
+
+class DatabaseConnexionError(Exception):
+    """Error raised when there is an issue with the database connexion."""
+
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)

@@ -10,7 +10,6 @@ license: MIT license
 Generate graphs from your sqlalchemy declarative database in one simple function call.
 
 How to use:
-
 ```python
 from sqlalchemy_db_graphing.graph import generate_graph_as_png
 from mymodule.database_schema import MySQLAlchemySchema
@@ -27,8 +26,6 @@ generate_graph_as_png(metadata=MySQLAlchemySchema.metadata, filename=filename)
 - `display_legend`: whether the legend is displayed or not.
 
 Finally, it supports all graphviz arguments, see https://graphviz.org/docs/graph/ for a comprehensive list.
-
-Extra example:
 ```
 generate_graph_as_png(
         metadata=MySQLAlchemySchema.metadata,
@@ -43,6 +40,15 @@ generate_graph_as_png(
 The module also includes two other functions:
 - `generate_graph_as_svg` for svg pictures generation.
 - `generate_graph_as_pydot` to get a pydot representation of your declarative base.
+- `get_schema_metadata_from_live_database` to retrieve the metadata from a live database instead of the declarative database
+
+Example with live database:
+```python
+from sqlalchemy_db_graphing.graph import get_schema_metadata_from_live_database
+
+database_url = f"postgresql+asyncpg://username:password@host:port/db_name"
+metadata = get_schema_metadata_from_live_database(url=database_url, schema="my_app_schema")
+```
 
 ## Credits
 
