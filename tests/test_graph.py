@@ -4,7 +4,7 @@ from typing import Dict
 import pydot
 from tests.paths import TESTS_OUTPUT_PATH
 
-from sqlalchemy_db_graphing.graph import (
+from sqlalchemy_db_graphing import (
     generate_graph_as_pydot,
     generate_graph_as_png,
     generate_graph_as_svg,

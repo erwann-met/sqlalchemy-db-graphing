@@ -1,6 +1,6 @@
 from sqlalchemy import MetaData, JSON, Column, Integer, String, Float, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import declarative_base
-from sqlalchemy_db_graphing.graph import generate_graph_as_png
+from sqlalchemy_db_graphing import generate_graph_as_png
 
 SCHEMA_NAME = "my_app_schema"
 metadata = MetaData(schema=SCHEMA_NAME)
