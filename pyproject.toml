@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "sqlalchemy_db_graphing"
 version = "0.1.0"
 description = "A module to display sqlalchemy database tables and keys as a graph"
-readme = "README.rst"
+readme = "README.md"
 authors = [
   {name = "Erwan Nisol", email = "erwan.nisol@free.fr"}
 ]
