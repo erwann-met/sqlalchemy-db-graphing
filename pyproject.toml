@@ -1,0 +1,68 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sqlalchemy_db_graphing"
+version = "0.1.0"
+description = "A module to display sqlalchemy database tables and keys as a graph"
+readme = "README.rst"
+authors = [
+  {name = "Erwan Nisol", email = "erwan.nisol@free.fr"}
+]
+maintainers = [
+  {name = "Erwan Nisol", email = "erwan.nisol@free.fr"}
+]
+classifiers = [
+
+]
+license = {text = "MIT license"}
+dependencies = [
+  "sqlalchemy",
+  "pydot",
+]
+
+[project.optional-dependencies]
+dev = [
+    "tox",  # testing
+    "coverage",  # testing
+    "mypy",  # linting
+    "pytest",  # testing
+    "ruff"  # linting
+]
+tests= [
+    "pytest",  # testing
+]
+
+[project.urls]
+
+bugs = "https://github.com/erwann-met/sqlalchemy_db_graphing/issues"
+changelog = "https://github.com/erwann-met/sqlalchemy_db_graphing/blob/master/changelog.md"
+homepage = "https://github.com/erwann-met/sqlalchemy_db_graphing"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.package-data]
+"*" = ["*.*"]
+
+
+
+
+# Mypy
+# ----
+
+[tool.mypy]
+files = "."
+
+# Use strict defaults
+strict = true
+warn_unreachable = true
+warn_no_return = true
+
+[[tool.mypy.overrides]]
+# Don't require test functions to include types
+module = "tests.*"
+allow_untyped_defs = true
+disable_error_code = "attr-defined"
+
