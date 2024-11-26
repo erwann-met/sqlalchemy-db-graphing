@@ -10,7 +10,7 @@ from sqlalchemy_db_graphing.style_presets import DEFAULT_STYLE_OPTIONS, PRESETS
 
 __author__ = """Erwan Nisol"""
 __email__ = "erwan.nisol@free.fr"
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __all__ = [
     "generate_graph_as_png",
     "generate_graph_as_pydot",
