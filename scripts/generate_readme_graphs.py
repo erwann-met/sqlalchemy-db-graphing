@@ -1,6 +1,11 @@
+""" This script generates a graph of the database schema and saves it as a PNG file to be used in the README.md file.
+"""
+import json
+
 from sqlalchemy import MetaData, JSON, Column, Integer, String, Float, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import declarative_base
-from sqlalchemy_db_graphing import generate_graph_as_png, generate_graph_as_svg
+
+from sqlalchemy_db_graphing import generate_graph_as_png, generate_graph_as_svg, PRESETS
 
 SCHEMA_NAME = "my_app_schema"
 metadata = MetaData(schema=SCHEMA_NAME)
@@ -92,10 +97,29 @@ class SimulationTask(Base):
 
 
 if __name__ == "__main__":
-    generate_graph_as_png(metadata=metadata, filename="diagrams/demo_app_schema.png")
+    generate_graph_as_png(metadata=metadata, filename="diagrams/default.png")
+
     generate_graph_as_png(
         metadata=metadata,
-        filename="diagrams/demo_app_schema_kwargs.png",
+        style_options="blue",
+        display_legend=False,
+        filename=f"diagrams/blue.png",
         rankdir="LR",
         splines = "ortho",
+    )
+    generate_graph_as_png(
+        metadata=metadata,
+        filename=f"diagrams/purple_rounded.png",
+        style_options="purple_rounded",
+        display_legend=False,
+        rankdir="TD",  # Draw the graph from Left to Right instead of Top Down.
+        splines="curved",
+    )
+    generate_graph_as_png(
+        metadata=metadata,
+        filename=f"diagrams/purple_blue.png",
+        style_options="purple_blue",
+        display_legend=False,
+        rankdir="TD",  # Draw the graph from Left to Right instead of Top Down.
+        splines="ortho",
     )
