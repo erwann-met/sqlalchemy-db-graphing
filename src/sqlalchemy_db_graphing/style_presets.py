@@ -68,28 +68,22 @@ BICOLOR_KWARGS: Dict[str, Dict[str, str]] = {
     if color_1 != color_2
 }
 
-PRESETS = {
-    name: generate_simple_preset(header_color=args["header_color"], pk_color=args["pk_color"])
-    for name, args in MONOCHROMES_KWARGS.items()
-}
+PRESETS = {name: generate_simple_preset(**args) for name, args in MONOCHROMES_KWARGS.items()}  # type: ignore
 PRESETS.update(
     {
         f"{name}_rounded": generate_simple_preset(
-            header_color=args["header_color"], pk_color=args["pk_color"], rounded=True
+            rounded=True,
+            **args,  # type: ignore
         )
         for name, args in MONOCHROMES_KWARGS.items()
     }
 )
-PRESETS.update(
-    {
-        name: generate_simple_preset(header_color=args["header_color"], pk_color=args["pk_color"])
-        for name, args in BICOLOR_KWARGS.items()
-    }
-)
+PRESETS.update({name: generate_simple_preset(**args) for name, args in BICOLOR_KWARGS.items()})  # type: ignore
 PRESETS.update(
     {
         f"{name}_rounded": generate_simple_preset(
-            header_color=args["header_color"], pk_color=args["pk_color"], rounded=True
+            rounded=True,
+            **args,  # type: ignore
         )
         for name, args in BICOLOR_KWARGS.items()
     }
