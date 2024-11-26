@@ -1,4 +1,4 @@
-# Sqlalchemy DB graphing tool
+# Sqlalchemy DB graphing tool version 0.2.0
 
 A module to display sqlalchemy database tables and keys as a graph. Inspired by https://pypi.org/project/sqlalchemy-schemadisplay/.
 
