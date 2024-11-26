@@ -16,7 +16,7 @@ from mymodule.database_schema import MySQLAlchemySchema
 filename = "path/to/save/file.png"
 generate_graph_as_png(metadata=MySQLAlchemySchema.metadata, filename=filename)
 ```
-![Database Graph](diagrams/default.png)
+![Database Graph](https://raw.githubusercontent.com/erwann-met/sqlalchemy-db-graphing/refs/heads/main/diagrams/default.png)
 
 `generate_graph_as_png` also supports arguments:
 - `style_options`: either a string referring to a style preset, or a dictionary of options defining the style of each graphviz node. Keys are:
@@ -58,7 +58,7 @@ generate_graph_as_png(
         splines = "ortho",
 )
 ```
-![Database Graph](diagrams/blue.png)
+![Database Graph](https://raw.githubusercontent.com/erwann-met/sqlalchemy-db-graphing/refs/heads/main/diagrams/blue.png)
 
 ```python
 generate_graph_as_png(
@@ -70,7 +70,7 @@ generate_graph_as_png(
         splines = "curved",
 )
 ```
-![Database Graph](diagrams/purple_rounded.png)
+![Database Graph](https://raw.githubusercontent.com/erwann-met/sqlalchemy-db-graphing/refs/heads/main/diagrams/purple_rounded.png)
 
 ```python
 generate_graph_as_png(
@@ -82,7 +82,7 @@ generate_graph_as_png(
         splines = "curved",
 )
 ```
-![Database Graph](diagrams/purple_blue.png)
+![Database Graph](https://raw.githubusercontent.com/erwann-met/sqlalchemy-db-graphing/refs/heads/main/diagrams/purple_blue.png)
 
 The module also includes a few other functions:
 - `generate_graph_as_svg` for svg pictures generation.
