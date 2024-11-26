@@ -1,11 +1,12 @@
 """Script to generate a database schema diagram."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import pydot
 from sqlalchemy import MetaData, create_engine
 
 import sqlalchemy_db_graphing.constants as cst
+from sqlalchemy_db_graphing.style_presets import PRESETS
 
 
 def read_model_metadata(metadata: MetaData) -> List[Dict[str, Any]]:
@@ -60,9 +61,7 @@ def read_model_metadata(metadata: MetaData) -> List[Dict[str, Any]]:
 
 def generate_graph_as_pydot(
     metadata: MetaData,
-    pk_color="#E4C087",
-    fk_color="#F6EFBD",
-    pk_and_fk_color="#BC7C7C",
+    style_options: Optional[Union[str, Dict[str, str]]] = None,
     display_legend=True,
     **kwargs: Any,
 ) -> pydot.Dot:
@@ -72,12 +71,22 @@ def generate_graph_as_pydot(
     ----------
     metadata : MetaData
         The metadata of the model to generate the diagram from.
-    pk_color : str, optional
-        Primary key color in the graph, by default "#E4C087"
-    fk_color : str, optional
-        Foreign key color in the graph, by default "#F6EFBD"
-    pk_and_fk_color : str, optional
-        Color of columns that are both a primary and a foreign key, by default "#BC7C7C"
+    style_options : Optional[Union[str, Dict[str, str]]]
+        A string with the name of a preset style.
+        Or a dictionary with the style options for the tables. See https://graphviz.org/doc/info/shapes.html#html for
+        supported styles. Style strings are expected to be in the format "key1='value1' key2='value2'".
+        Example: "align='center' bgcolor='grey' border='0'".
+        Possible keys:
+            - `table_style`: Style of each table (table element).
+            - `table_name_style`: Style of the table name (font element).
+            - `header_style`: Style of the table headers (td element).
+            - `schema_name_style`: Style of the schema name (font element).
+            - `pk_style`: Style of a column identified as a primary key (td element).
+            - `fk_style`: Style of a column identified as a foreign key (td element).
+            - `pk_fk_style`: Style of a column identified as both a primary and foreign key (td element).
+            - `column_style`: Style of all other columns (td element).
+            - `legend_style`: Style of the legend (table element).
+        Missing keys will use the default style.
     display_legend : bool, optional
         Whether to display a legend in the graph, by default True
     **kwargs : Any
@@ -88,7 +97,20 @@ def generate_graph_as_pydot(
     -------
     pydot.Dot
         A pydot graph with the database schema diagram.
+
+    Raises
+    ------
+    ValueError
+        If the style options are not recognized.
     """
+    if style_options is None:
+        style_options = cst.DEFAULT_STYLE_OPTIONS
+    elif isinstance(style_options, str):
+        if style_options not in PRESETS:
+            raise ValueError(
+                f"Style options '{style_options}' not recognized. Available presets: {list(PRESETS.keys())}"
+            )
+        style_options = PRESETS[style_options]
     info_dict = read_model_metadata(metadata)
     graph = pydot.Dot(**kwargs)
     # Add nodes
@@ -99,9 +121,7 @@ def generate_graph_as_pydot(
                 shape="plaintext",
                 label=generate_table_html(
                     table_dict=table,
-                    pk_color=pk_color,
-                    fk_color=fk_color,
-                    pk_and_fk_color=pk_and_fk_color,
+                    style_options=style_options,
                 ),
             )
         )
@@ -119,45 +139,89 @@ def generate_graph_as_pydot(
             )
     # Add legend
     if display_legend:
-        legend_html = "<<table border='0' cellpadding='2' cellspacing='0'>"
-        legend_html += "<tr><td><b>Legend</b></td></tr>"
-        legend_html += f"<tr><td align='left' bgcolor='{pk_color}'>Primary Key</td></tr>"
-        legend_html += f"<tr><td align='left' bgcolor='{fk_color}'>Foreign Key</td></tr>"
-        legend_html += f"<tr><td align='left' bgcolor='{pk_and_fk_color}'>Primary and Foreign Key</td></tr>"
+        legend_html = cst.HTML_LEGEND.format(legend_style=style_options.get(cst.LEGEND_STYLE, cst.DEFAULT_LEGEND_STYLE))
+        legend_html += cst.HTML_COLUMN.format(
+            column_style=style_options.get(cst.PK_STYLE, cst.DEFAULT_PK_STYLE),
+            displayed_name="Primary Key",
+        )
+        legend_html += cst.HTML_COLUMN.format(
+            column_style=style_options.get(cst.FK_STYLE, cst.DEFAULT_FK_STYLE),
+            displayed_name="Foreign Key",
+        )
+        legend_html += cst.HTML_COLUMN.format(
+            column_style=style_options.get(cst.PK_FK_STYLE, cst.DEFAULT_PK_FK_STYLE),
+            displayed_name="Primary and Foreign Key",
+        )
         legend_html += "</table>>"
         graph.add_node(pydot.Node("legend", shape="rectangle", label=legend_html))
     return graph
 
 
-def generate_table_html(table_dict, pk_color, fk_color, pk_and_fk_color):
+def generate_table_html(table_dict: Dict[str, Any], style_options: Dict[str, str]) -> str:
+    """Generate the HTML code for a table in the graph.
+
+    Parameters
+    ----------
+    table_dict : Dict[str, Any]
+        A dictionary with the metadata of the table.
+    style_options : Dict[str, str]
+        A dictionary with the style options for the tables. See https://graphviz.org/doc/info/shapes.html#html for
+        supported styles. Style strings are expected to be in the format "key1='value1' key2='value2'".
+        Example: "align='center' bgcolor='grey' border='0'".
+        Possible keys:
+            - `table_style`: Style of each table (table element).
+            - `table_name_style`: Style of the table name (font element).
+            - `header_style`: Style of the table headers (td element).
+            - `schema_name_style`: Style of the schema name (font element).
+            - `pk_style`: Style of a column identified as a primary key (td element).
+            - `fk_style`: Style of a column identified as a foreign key (td element).
+            - `pk_fk_style`: Style of a column identified as both a primary and foreign key (td element).
+            - `column_style`: Style of all other columns (td element).
+            - `legend_style`: Style of the legend (table element).
+        Missing keys will use the default style.
+
+    Returns
+    -------
+    str
+        The HTML code for the table.
+    """
     if (schema := table_dict["schema"]) is not None:
         table_name_html = cst.HTML_TABLE_NAME_WITH_SCHEMA.format(
-            schema=schema, table_name=table_dict["name"], color="red"
+            schema=schema,
+            table_name=table_dict["name"],
+            schema_name_style=style_options.get(cst.SCHEMA_NAME_STYLE, cst.DEFAULT_SCHEMA_NAME_STYLE),
+            table_name_style=style_options.get(cst.TABLE_NAME_STYLE, cst.DEFAULT_TABLE_NAME_STYLE),
         )
     else:
-        table_name_html = cst.HTML_TABLE_NAME_WITHOUT_SCHEMA.format(table_name=table_dict["name"], color="red")
-    table_html = cst.HTML_TABLE_HEADER.format(table_html=table_name_html)
+        table_name_html = cst.HTML_TABLE_NAME_WITHOUT_SCHEMA.format(
+            table_name=table_dict["name"],
+            table_name_style=style_options.get(cst.TABLE_NAME_STYLE, cst.DEFAULT_TABLE_NAME_STYLE),
+        )
+    table_html = cst.HTML_TABLE_HEADER.format(
+        table_style=style_options.get(cst.TABLE_STYLE, cst.DEFAULT_TABLE_STYLE),
+        header_style=style_options.get(cst.HEADER_STYLE, cst.DEFAULT_HEADER_STYLE),
+        table_html=table_name_html,
+    )
     for column in table_dict["columns"]:
         displayed_name = f"{column['name']} ({column['type']})"
         if column["primary_key"] and column["foreign_key"]:
-            color = pk_and_fk_color
+            column_style = style_options.get(cst.PK_FK_STYLE, cst.DEFAULT_PK_FK_STYLE)
         elif column["primary_key"]:
-            color = pk_color
+            column_style = style_options.get(cst.PK_STYLE, cst.DEFAULT_PK_STYLE)
         elif column["foreign_key"]:
-            color = fk_color
+            column_style = style_options.get(cst.FK_STYLE, cst.DEFAULT_FK_STYLE)
         else:
-            color = "white"
-        table_html += cst.HTML_COLUMN.format(color=color, displayed_name=displayed_name)
+            column_style = style_options.get(cst.COLUMN_STYLE, cst.DEFAULT_COLUMN_STYLE)
+        table_html += cst.HTML_COLUMN.format(column_style=column_style, displayed_name=displayed_name)
     table_html += "</table>>"
+
     return table_html
 
 
 def generate_graph_as_png(
     metadata: MetaData,
     filename: str,
-    pk_color="#E4C087",
-    fk_color="#F6EFBD",
-    pk_and_fk_color="#BC7C7C",
+    style_options: Optional[Dict[str, str]] = None,
     display_legend=True,
     **kwargs: Any,
 ) -> None:
@@ -169,28 +233,37 @@ def generate_graph_as_png(
         The metadata of the model to generate the diagram from.
     filename : str
         The name of the file to save the diagram to.
-    pk_color : str, optional
-        Primary key color in the graph, by default "#E4C087"
-    fk_color : str, optional
-        Foreign key color in the graph, by default "#F6EFBD"
-    pk_and_fk_color : str, optional
-        Color of columns that are both a primary and a foreign key, by default "#BC7C7C"
+    style_options : Optional[Dict[str, str]]
+        A dictionary with the style options for the tables. See https://graphviz.org/doc/info/shapes.html#html for
+        supported styles. Style strings are expected to be in the format "key1='value1' key2='value2'".
+        Example: "align='center' bgcolor='grey' border='0'".
+        Possible keys:
+            - `table_style`: Style of each table (table element).
+            - `table_name_style`: Style of the table name (font element).
+            - `header_style`: Style of the table headers (td element).
+            - `schema_name_style`: Style of the schema name (font element).
+            - `pk_style`: Style of a column identified as a primary key (td element).
+            - `fk_style`: Style of a column identified as a foreign key (td element).
+            - `pk_fk_style`: Style of a column identified as both a primary and foreign key (td element).
+            - `column_style`: Style of all other columns (td element).
+            - `legend_style`: Style of the legend (table element).
+        Missing keys will use the default style.
     display_legend : bool, optional
         Whether to display a legend in the graph, by default True
     **kwargs : Any
         Additional arguments to pass to the pydot.Dot constructor
         List of possible arguments: https://graphviz.org/docs/graph/
     """
-    graph = generate_graph_as_pydot(metadata, pk_color, fk_color, pk_and_fk_color, display_legend, **kwargs)
+    graph = generate_graph_as_pydot(
+        metadata=metadata, style_options=style_options, display_legend=display_legend, **kwargs
+    )
     graph.write_png(filename)
 
 
 def generate_graph_as_svg(
     metadata: MetaData,
     filename: str,
-    pk_color="#E4C087",
-    fk_color="#F6EFBD",
-    pk_and_fk_color="#BC7C7C",
+    style_options: Optional[Dict[str, str]] = None,
     display_legend=True,
     **kwargs: Any,
 ) -> None:
@@ -202,19 +275,30 @@ def generate_graph_as_svg(
         The metadata of the model to generate the diagram from.
     filename : str
         The name of the file to save the diagram to.
-    pk_color : str, optional
-        Primary key color in the graph, by default "#E4C087"
-    fk_color : str, optional
-        Foreign key color in the graph, by default "#F6EFBD"
-    pk_and_fk_color : str, optional
-        Color of columns that are both a primary and a foreign key, by default "#BC7C7C"
+    style_options : Optional[Dict[str, str]]
+        A dictionary with the style options for the tables. See https://graphviz.org/doc/info/shapes.html#html for
+        supported styles. Style strings are expected to be in the format "key1='value1' key2='value2'".
+        Example: "align='center' bgcolor='grey' border='0'".
+        Possible keys:
+            - `table_style`: Style of each table (table element).
+            - `table_name_style`: Style of the table name (font element).
+            - `header_style`: Style of the table headers (td element).
+            - `schema_name_style`: Style of the schema name (font element).
+            - `pk_style`: Style of a column identified as a primary key (td element).
+            - `fk_style`: Style of a column identified as a foreign key (td element).
+            - `pk_fk_style`: Style of a column identified as both a primary and foreign key (td element).
+            - `column_style`: Style of all other columns (td element).
+            - `legend_style`: Style of the legend (table element).
+        Missing keys will use the default style.
     display_legend : bool, optional
         Whether to display a legend in the graph, by default True
     **kwargs : Any
         Additional arguments to pass to the pydot.Dot constructor
         List of possible arguments: https://graphviz.org/docs/graph/
     """
-    graph = generate_graph_as_pydot(metadata, pk_color, fk_color, pk_and_fk_color, display_legend, **kwargs)
+    graph = generate_graph_as_pydot(
+        metadata=metadata, style_options=style_options, display_legend=display_legend, **kwargs
+    )
     graph.write_svg(filename)
 
 

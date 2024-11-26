@@ -1,5 +1,5 @@
 
-default_stages: [commit] # All hooks that do not specify any stages are set to `commit` by default
+default_stages: [pre-commit] # All hooks that do not specify any stages are set to `commit` by default
 repos:
   # Generic Hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
